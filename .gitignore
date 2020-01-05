@@ -1,0 +1,5 @@
+# Default build output directory
+build/
+
+# Manually built third party libraries
+thirdparty/TestU01/

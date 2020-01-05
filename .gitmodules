@@ -1,0 +1,9 @@
+[submodule "thirdparty/LittleIntPacker"]
+	path = thirdparty/LittleIntPacker
+	url = https://github.com/lemire/LittleIntPacker
+[submodule "thirdparty/pcg-c"]
+	path = thirdparty/pcg-c
+	url = https://github.com/imneme/pcg-c
+[submodule "thirdparty/PractRand"]
+	path = thirdparty/PractRand
+	url = https://github.com/LynnKirby/PractRand

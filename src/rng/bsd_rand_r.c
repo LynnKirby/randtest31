@@ -3,8 +3,8 @@
  * SPDX-FileCopyrightText: 2020 Lynn Kirby
  */
 
-#include <stdlib.h>
 #include <stdint.h>
+#include <limits.h>
 
 unsigned state;
 
@@ -15,6 +15,6 @@ void bsd_rand_r_init(uint32_t seed)
 
 uint32_t bsd_rand_r_next()
 {
-	state = state * 1103515245 + 12345;
-	return (state & RAND_MAX);
+    state = state * 1103515245 + 12345;
+	  return (state & INT32_MAX);
 }

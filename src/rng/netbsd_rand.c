@@ -38,14 +38,14 @@
  */
 
 #include <stdint.h>
-#include <stdlib.h>
+#include <limits.h>
 
 static unsigned long next = 1;
 
 uint32_t netbsd_rand_next()
 {
 	/* LINTED integer overflow */
-	return (int)((next = next * 1103515245 + 12345) % ((u_long)RAND_MAX + 1));
+	return (int)((next = next * 1103515245 + 12345) % ((unsigned long) INT32_MAX + 1));
 }
 
 void netbsd_rand_init(uint32_t seed)

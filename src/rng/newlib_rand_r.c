@@ -6,7 +6,7 @@
  */
 
 #include <stdint.h>
-#include <stdlib.h>
+#include <limits.h>
 
 /* Pseudo-random generator based on Minimal Standard by
    Lewis, Goodman, and Miller in 1969.
@@ -48,5 +48,5 @@ uint32_t newlib_rand_r_next()
     if (s < 0)
       s += 2147483647;
     (*seed) = (unsigned int)s;
-    return (int)(s & RAND_MAX);
+    return (int)(s & INT32_MAX);
 }

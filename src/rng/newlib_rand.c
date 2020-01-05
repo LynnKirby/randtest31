@@ -6,7 +6,7 @@
  */
 
 #include <stdint.h>
-#include <stdlib.h>
+#include <limits.h>
 
 uint64_t state;
 
@@ -21,5 +21,5 @@ uint32_t newlib_rand_next()
        Computer Programming," Vol 2, Seminumerical Algorithms, Third
        Edition, Addison-Wesley, 1998, p. 106 (line 26) & p. 108 */
     state = state * 6364136223846793005LL + 1;
-    return (state >> 32) & RAND_MAX;
+    return (state >> 32) & INT32_MAX;
 }

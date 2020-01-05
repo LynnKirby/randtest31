@@ -51,6 +51,7 @@ enum mode {
     MODE_SMALLCRUSH,
     MODE_CRUSH,
     MODE_BIGCRUSH,
+    MODE_RABBIT,
     MODE_LINCOMP
 };
 
@@ -112,6 +113,9 @@ static void do_testu01(struct RNG *rng, bool direct, enum mode mode)
         case MODE_BIGCRUSH:
             bbattery_BigCrush(gen);
             break;
+        case MODE_RABBIT:
+            bbattery_Rabbit(gen, 16777216); /* 2^24 bytes == 16 MB */
+            break;
         case MODE_LINCOMP: {
             swrite_Basic = TRUE;
             scomp_Res* res = scomp_CreateRes();
@@ -160,6 +164,7 @@ _Noreturn static void show_usage_and_exit(bool error, bool show_help)
     fputs("  smallcrush  run TestU01 SmallCrush test battery\n", out);
     fputs("  crush       run TestU01 Crush test battery\n", out);
     fputs("  bigcrush    run TestU01 BigCrush test battery\n", out);
+    fputs("  rabbit      run TestU01 Rabbit test battery (16 MB)\n", out);
     fputs("  lincomp     run TestU01 LinearComp test\n", out);
     fputs("\n", out);
     fputs("generators:\n", out);
@@ -264,6 +269,8 @@ int main(int argc, char** argv)
         mode = MODE_CRUSH;
     } else if (strcmp(mode_str, "bigcrush") == 0) {
         mode = MODE_BIGCRUSH;
+    } else if (strcmp(mode_str, "rabbit") == 0) {
+        mode = MODE_RABBIT;
     } else if (strcmp(mode_str, "lincomp") == 0) {
         mode = MODE_LINCOMP;
     } else {

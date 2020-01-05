@@ -12,6 +12,16 @@
 #include "TestU01.h"
 #include "bitpacking.h"
 
+/*
+ * Customized TestU01 batteries.
+ */
+
+extern void bbattery_Rabbit31(unif01_Gen *gen, double nb);
+
+/*
+ * RNG holder.
+ */
+
 typedef void(*rng_init_fn)(uint32_t);
 typedef uint32_t(*rng_next_fn)();
 
@@ -52,6 +62,7 @@ enum mode {
     MODE_CRUSH,
     MODE_BIGCRUSH,
     MODE_RABBIT,
+    MODE_RABBIT31,
     MODE_LINCOMP
 };
 
@@ -116,6 +127,9 @@ static void do_testu01(struct RNG *rng, bool direct, enum mode mode)
         case MODE_RABBIT:
             bbattery_Rabbit(gen, 16777216); /* 2^24 bytes == 16 MB */
             break;
+        case MODE_RABBIT31:
+            bbattery_Rabbit31(gen, 16777216); /* 2^24 bytes == 16 MB */
+            break;
         case MODE_LINCOMP: {
             swrite_Basic = TRUE;
             scomp_Res* res = scomp_CreateRes();
@@ -161,11 +175,12 @@ _Noreturn static void show_usage_and_exit(bool error, bool show_help)
     fputs("\n", out);
     fputs("modes:\n", out);
     fputs("  write       write RNG output to stdout\n", out);
-    fputs("  smallcrush  run TestU01 SmallCrush test battery\n", out);
-    fputs("  crush       run TestU01 Crush test battery\n", out);
-    fputs("  bigcrush    run TestU01 BigCrush test battery\n", out);
-    fputs("  rabbit      run TestU01 Rabbit test battery (16 MB)\n", out);
-    fputs("  lincomp     run TestU01 LinearComp test\n", out);
+    fputs("  smallcrush  TestU01 SmallCrush test battery\n", out);
+    fputs("  crush       TestU01 Crush test battery\n", out);
+    fputs("  bigcrush    TestU01 BigCrush test battery\n", out);
+    fputs("  rabbit      TestU01 Rabbit test battery (16 MB)\n", out);
+    fputs("  rabbit31    TestU01 31-bit Rabbit test battery (16 MB)\n", out);
+    fputs("  lincomp     TestU01 LinearComp test\n", out);
     fputs("\n", out);
     fputs("generators:\n", out);
 
@@ -271,6 +286,8 @@ int main(int argc, char** argv)
         mode = MODE_BIGCRUSH;
     } else if (strcmp(mode_str, "rabbit") == 0) {
         mode = MODE_RABBIT;
+    } else if (strcmp(mode_str, "rabbit31") == 0) {
+        mode = MODE_RABBIT31;
     } else if (strcmp(mode_str, "lincomp") == 0) {
         mode = MODE_LINCOMP;
     } else {

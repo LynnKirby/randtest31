@@ -4,6 +4,7 @@
 add_executable(
     randtest31
     main.c
+    bbattery31.c
     rng/glibc_rand_r.c
     rng/musl_rand_r.c
     rng/newlib_rand_r.c

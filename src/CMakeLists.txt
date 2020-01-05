@@ -24,4 +24,4 @@ add_executable(
     rng/glibc_random.c
 )
 
-target_link_libraries(randtest31 PRIVATE LittleIntPacker pcg TestU01)
+target_link_libraries(randtest31 PRIVATE LittleIntPacker pcg testu01)

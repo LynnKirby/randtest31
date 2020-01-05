@@ -25,35 +25,17 @@ Features include:
 
 ## Building
 
-1. Clone the repository and the submodules:
+Clone the repository then build the project with CMake. I recommend installing
+[Ninja][] and using it as the [CMake generator][].
 
-   ```sh
-   git clone https://github.com/LynnKirby/randtest31
-   cd randtest31
-   git submodule update
-   ```
-
-2. Install [TestU01][] into `thirdparty/TestU01`. For example, having extracted
-   the source to a temporary directory:
-
-    ```sh
-    ./configure --prefix="FULL PATH TO randtest/thirdparty/TestU01"
-    make -j
-    make -j install
-    ```
-
-   There are prebuilt binaries for MinGW and Cygwin on Windows but I have not
-   tested them.
-
-3. Build the project with CMake. I recommend installing [Ninja][] and using it
-   as the [CMake generator][]:
-
-   ```sh
-   mkdir build
-   cd build
-   cmake .. -GNinja
-   ninja
-   ```
+```sh
+git clone --recurse-submodules https://github.com/LynnKirby/randtest31
+cd randtest31
+mkdir build
+cd build
+cmake -GNinja ..
+ninja
+```
 
 The executables will be placed under `bin` in your build directory. This
 includes the main `randtest31` and PractRand executables like `RNG_test`.
@@ -112,8 +94,8 @@ software. See `LICENSES/LicenseRef-testu01.txt` for details.
 
 ## Links
 
-* Lynn Kirby's [PractRand fork][]. It's used as a git submodule in this project
-  to easily build and use everything with CMake.
+* Lynn Kirby's [PractRand fork][] and [TestU01 fork][]. They're used as git
+  submodules in this project to easily build everything with CMake.
 
 * Lemire's [testingRNG][]. A project with similar goals to this one but a much
   different implementation.
@@ -123,4 +105,5 @@ software. See `LICENSES/LicenseRef-testu01.txt` for details.
 [Ninja]: https://ninja-build.org/
 [CMake generator]: https://cmake.org/cmake/help/latest/generator/Ninja.html
 [PractRand fork]: https://github.com/LynnKirby/PractRand
+[TestU01 fork]: https://github.com/LynnKirby/TestU01
 [testingRNG]: https://github.com/lemire/testingRNG

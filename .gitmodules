@@ -10,3 +10,6 @@
 [submodule "thirdparty/PractRand"]
 	path = thirdparty/PractRand
 	url = https://github.com/LynnKirby/PractRand
+[submodule "thirdparty/TestU01"]
+	path = thirdparty/TestU01
+	url = https://github.com/LynnKirby/TestU01

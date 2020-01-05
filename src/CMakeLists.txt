@@ -14,7 +14,7 @@ add_executable(
     rng/netbsd_rand.c
     rng/freebsd_rand.c
     rng/freebsd_random.c
-    rng/openbsd_rand_r.c
+    rng/bsd_rand_r.c
     rng/xorshift32.c
     rng/mulberry32.c
     rng/splitmix32.c

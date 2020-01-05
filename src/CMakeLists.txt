@@ -7,6 +7,7 @@ add_executable(
     rng/glibc_rand_r.c
     rng/musl_rand_r.c
     rng/newlib_rand_r.c
+    rng/pcg32.c
     rng/pcg32si.c
     rng/pcg32f.c
     rng/musl_rand.c

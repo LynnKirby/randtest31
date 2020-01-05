@@ -3,6 +3,7 @@
  * SPDX-FileCopyrightText: 2020 Lynn Kirby
  */
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -45,7 +46,15 @@ static struct RNG rngs[] = {
  * Output modes.
  */
 
-static void do_practrand(struct RNG *rng)
+enum mode {
+    MODE_WRITE,
+    MODE_SMALLCRUSH,
+    MODE_CRUSH,
+    MODE_BIGCRUSH,
+    MODE_LINCOMP
+};
+
+static void do_packed_write(struct RNG *rng)
 {
     uint32_t unpacked[32];
     uint8_t packed[124];
@@ -60,7 +69,7 @@ static void do_practrand(struct RNG *rng)
     }
 }
 
-static void do_practrand_direct(struct RNG *rng)
+static void do_direct_write(struct RNG *rng)
 {
     for (;;) {
         uint32_t value = rng->next() & INT_MAX;
@@ -68,57 +77,92 @@ static void do_practrand_direct(struct RNG *rng)
     }
 }
 
+/*
+ * We need to perform the left shift on output. Ideally the TestU01 generator
+ * would save the RNG struct as state and then pass it to the generator
+ * function, but it doesn't do that. So we use this global state.
+ */
 static struct RNG *testu01_rng;
 
-static unsigned testu01_next()
+static unsigned testu01_next_direct()
+{
+    return testu01_rng->next() & INT_MAX;
+}
+
+static unsigned testu01_next_fixed()
 {
     return testu01_rng->next() << 1;
 }
 
-static void do_smallcrush(struct RNG *rng)
+static void do_testu01(struct RNG *rng, bool direct, enum mode mode)
 {
-    /*
-     * We need to perform the left shift on output. Ideally the TestU01
-     * generator would save the RNG struct as state and then pass it to the
-     * generator function, but it doesn't do that. So we use this global state.
-     */
     testu01_rng = rng;
+    rng_next_fn next = direct ? testu01_next_direct : testu01_next_fixed;
+    char *desc = (char *) rng->description; /* non-const for some reason */
 
-    unif01_Gen *gen = unif01_CreateExternGenBits(
-            (char *) rng->description, testu01_next);
-    bbattery_SmallCrush(gen);
+    unif01_Gen *gen = unif01_CreateExternGenBits(desc, next);
+
+    switch (mode) {
+        case MODE_SMALLCRUSH:
+            bbattery_SmallCrush(gen);
+            break;
+        case MODE_CRUSH:
+            bbattery_Crush(gen);
+            break;
+        case MODE_BIGCRUSH:
+            bbattery_BigCrush(gen);
+            break;
+        case MODE_LINCOMP: {
+            swrite_Basic = TRUE;
+            scomp_Res* res = scomp_CreateRes();
+
+            static const int sizes[] = {
+                250, 500, 1000, 5000, 25000, 50000, 75000
+            };
+
+            for (int i = 0; i < 7; i++) {
+                scomp_LinearComp(gen, res, 1, sizes[i], 0, 1);
+            }
+
+            scomp_DeleteRes(res);
+            break;
+        }
+    }
+
     unif01_DeleteExternGenBits(gen);
 }
-
 
 /*
  * Main.
  */
 
-enum mode {
-    MODE_PRACTRAND,
-    MODE_SMALLCRUSH
-};
-
 #define ITERATE_RNGS(var) for (struct RNG *var = rngs; var->id; var++)
 
-_Noreturn static void show_usage(_Bool error)
+_Noreturn static void show_usage_and_exit(bool error, bool show_help)
 {
     FILE *out = error ? stderr : stdout;
 
-    fputs("usage: randtest31 [-v] MODE RNG\n", out);
-    fputs("       randtest31 practrand RNG | RNG_test stdin\n", out);
-    fputs("       randtest31 smallcrush RNG\n", out);
+    fputs("usage: randtest31 [-h] [-v] [-d] MODE RNG\n", out);
+    if (show_help) exit(error);
+
     fputs("\n", out);
     fputs("positional arguments:\n", out);
-    fputs("  MODE        {practrand, smallcrush}\n", out);
-    fputs("  RNG         RNG to test, see list below\n", out);
+    fputs("  MODE        output mode\n", out);
+    fputs("  RNG         random number generator under test\n", out);
     fputs("\n", out);
     fputs("optional arguments:\n", out);
     fputs("  -h, --help  show this help message and exit\n", out);
-    fputs("  -v          verbose output (ignored for practrand)\n", out);
+    fputs("  -d          do not adjust for 31-bit resolution (direct output)\n", out);
+    fputs("  -v          verbose messages\n", out);
     fputs("\n", out);
-    fputs("available generators:\n", out);
+    fputs("modes:\n", out);
+    fputs("  write       write RNG output to stdout\n", out);
+    fputs("  smallcrush  run TestU01 SmallCrush test battery\n", out);
+    fputs("  crush       run TestU01 Crush test battery\n", out);
+    fputs("  bigcrush    run TestU01 BigCrush test battery\n", out);
+    fputs("  lincomp     run TestU01 LinearComp test\n", out);
+    fputs("\n", out);
+    fputs("generators:\n", out);
 
     size_t longest_gen_id = 0;
 
@@ -139,60 +183,92 @@ _Noreturn static void show_usage(_Bool error)
     exit(error);
 }
 
+_Noreturn static void exit_failed_with_usage()
+{
+    show_usage_and_exit(true, true);
+}
+
+_Noreturn static void exit_success_with_help()
+{
+    show_usage_and_exit(false, false);
+}
+
 #define CLI_ERROR "randtest31: error: "
 
 int main(int argc, char** argv)
 {
+    /* Default settings for TestU01 */
+    swrite_Basic = FALSE;
+
     bool verbose = false;
+    bool direct = false;
     const char *mode_str = NULL;
     const char *rng_id_str = NULL;
+
+    /*
+     * Extract arguments.
+     */
 
     for (size_t i = 1; i < argc; i++) {
         const char * cur = argv[i];
 
-        /* Parse help flags */
-        if (strcmp(cur, "-h") == 0) show_usage(false);
-        if (strcmp(cur, "--help") == 0) show_usage(false);
+        /* Extract help flags */
+        if (strcmp(cur, "-h") == 0) exit_success_with_help();
+        if (strcmp(cur, "--help") == 0) exit_success_with_help();
 
-        /* Parse flags */
-        if (strcmp(cur, "-v") == 0) {
-            verbose = true;
-        } else if (cur[0] == '-') {
-            fprintf(stderr, "randtest31: error: unknown argument '%s'\n", cur);
-            show_usage(true);
-        }
-
-        /* Parse positional arguments */
-        if (!mode_str) {
-            mode_str = cur;
-        } else if (!rng_id_str) {
-            rng_id_str = cur;
+        if (cur[0] == '-') {
+            /* Extract flags */
+            if (strcmp(cur, "-v") == 0) {
+                verbose = true;
+            } else if (strcmp(cur, "-d") == 0) {
+                direct = true;
+            } else {
+                fprintf(stderr, CLI_ERROR "unknown argument '%s'\n", cur);
+                exit_failed_with_usage();
+            }
         } else {
-            fputs("randtest31: error: too many arguments\n", stderr);
-            show_usage(true);
+            /* Extract positional arguments */
+            if (!mode_str) {
+                mode_str = cur;
+            } else if (!rng_id_str) {
+                rng_id_str = cur;
+            } else {
+                fputs(CLI_ERROR "too many positional arguments\n", stderr);
+                exit_failed_with_usage();
+            }
         }
     }
 
     if (!mode_str) {
         fputs(CLI_ERROR "missing MODE argument\n", stderr);
-        show_usage(true);
+        exit_failed_with_usage();
     }
 
     if (!rng_id_str) {
         fputs(CLI_ERROR "missing RNG argument\n", stderr);
-        show_usage(true);
+        exit_failed_with_usage();
     }
+
+    /*
+     * Parse positional arguments.
+     */
 
     enum mode mode;
     struct RNG* rng_in_use = NULL;
 
-    if (strcmp(mode_str, "practrand") == 0) {
-        mode = MODE_PRACTRAND;
+    if (strcmp(mode_str, "write") == 0) {
+        mode = MODE_WRITE;
     } else if (strcmp(mode_str, "smallcrush") == 0) {
         mode = MODE_SMALLCRUSH;
+    } else if (strcmp(mode_str, "crush") == 0) {
+        mode = MODE_CRUSH;
+    } else if (strcmp(mode_str, "bigcrush") == 0) {
+        mode = MODE_BIGCRUSH;
+    } else if (strcmp(mode_str, "lincomp") == 0) {
+        mode = MODE_LINCOMP;
     } else {
         fprintf(stderr, CLI_ERROR "unknown mode '%s'\n", mode_str);
-        show_usage(true);
+        exit_failed_with_usage();
     }
 
     ITERATE_RNGS(rng) {
@@ -203,20 +279,33 @@ int main(int argc, char** argv)
     }
 
     if (!rng_in_use) {
-        fprintf(stderr, CLI_ERROR "unknown generator '%s'\n\n", rng_id_str);
-        show_usage(true);
+        fprintf(stderr, CLI_ERROR "unknown generator '%s'\n", rng_id_str);
+        exit_failed_with_usage();
     }
+
+    /*
+     * Handle other flags.
+     */
+
+    if (verbose) {
+        swrite_Basic = TRUE;
+    }
+
+    /*
+     * Run the specified mode.
+     */
 
     /* An amazing seed. */
     rng_in_use->init(123456789);
 
-    switch (mode) {
-    case MODE_PRACTRAND:
-        do_practrand(rng_in_use);
-        break;
-    case MODE_SMALLCRUSH:
-        do_smallcrush(rng_in_use);
-        break;
+    if (mode == MODE_WRITE) {
+        if (direct) {
+            do_direct_write(rng_in_use);
+        } else {
+            do_packed_write(rng_in_use);
+        }
+    } else {
+        do_testu01(rng_in_use, direct, mode);
     }
 
     return 0;

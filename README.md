@@ -53,19 +53,27 @@ test harness corrects for this.
 The executables will be placed under `bin` in your build directory. This
 includes the main `randtest31` and PractRand executables like `RNG_test`.
 
-## Running
+## Usage
 
-`randtest31` has two modes. Use `randtest31 --help` to see available RNGs.
+`randtest31` has a few modes. Use `randtest31 --help` to see available RNGs.
 
-**`practrand`** writes to standard output and is intended to be consumed by
-PractRand's `RNG_test` (though it could also be used to generate data to a file,
-or piped to a different program). For example:
+By default, output will be adjusted so that RNG values can be used by the test
+suites correctly. You can disable this and use the RNG values directly with the
+`-d` flag.
+
+### PractRand
+
+Use the `write` mode along with PractRand's `RNG_test` (which is built
+automatically alongside `randtest31`). For example:
 
 ```
-./randtest31 practrand musl_rand | ./RNG_test stdin
+./randtest31 write musl_rand | ./RNG_test stdin
 ```
 
-**`smallcrush`** runs the TestU01 SmallCrush test suite. For example:
+### TestU01
+
+You can run the Crush test batteries with `smallcrush`, `crush`, and `bigcrush`.
+You can also run the LinearComp test by itself with `lincomp`.
 
 ```
 ./randtest31 smallcrush musl_rand

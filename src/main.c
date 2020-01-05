@@ -9,6 +9,11 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#ifdef _WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 #include "TestU01.h"
 #include "bitpacking.h"
 
@@ -66,6 +71,21 @@ enum mode {
     MODE_LINCOMP
 };
 
+static void write_stdout(const void *buf, size_t size, size_t nmemb)
+{
+    if (fwrite(buf, size, nmemb, stdout) != nmemb) {
+        if (errno == EPIPE) {
+            /* Normally SIGPIPE will terminate the process if the other end of
+             * stdout closes. But the Microsoft C Runtime doesn't support
+             * SIGPIPE so we need to check for it here. */
+            exit(0);
+        } else {
+            perror("failed writing to stdout");
+            exit(1);
+        }
+    }
+}
+
 static void do_packed_write(struct RNG *rng)
 {
     uint32_t unpacked[32];
@@ -73,19 +93,19 @@ static void do_packed_write(struct RNG *rng)
 
     for (;;) {
         for (size_t i = 0; i < 32; i++) {
-            unpacked[i] = rng->next() & INT_MAX;
+            unpacked[i] = rng->next() & INT32_MAX;
         }
 
         pack32(unpacked, 32, 31, packed);
-        fwrite(packed, 1, 124, stdout);
+        write_stdout(packed, 1, 124);
     }
 }
 
 static void do_direct_write(struct RNG *rng)
 {
     for (;;) {
-        uint32_t value = rng->next() & INT_MAX;
-        fwrite(&value, sizeof(value), 1, stdout);
+        uint32_t value = rng->next() & INT32_MAX;
+        write_stdout(&value, sizeof(value), 1);
     }
 }
 
@@ -98,7 +118,7 @@ static struct RNG *testu01_rng;
 
 static unsigned testu01_next_direct()
 {
-    return testu01_rng->next() & INT_MAX;
+    return testu01_rng->next() & INT32_MAX;
 }
 
 static unsigned testu01_next_fixed()
@@ -323,6 +343,10 @@ int main(int argc, char** argv)
     rng_in_use->init(123456789);
 
     if (mode == MODE_WRITE) {
+        /* Ensure stdout is in binary mode. */
+#ifdef _WIN32
+        _setmode(_fileno(stdout), _O_BINARY);
+#endif
         if (direct) {
             do_direct_write(rng_in_use);
         } else {

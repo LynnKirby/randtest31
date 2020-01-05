@@ -2,6 +2,8 @@
  * SPDX-License-Identifier: LicenseRef-MIT-musl
  * SPDX-FileCopyrightText: 2018 Rich Felker
  * SPDX-FileCopyrightText: 2020 Lynn Kirby
+ *
+ * Modified from musl src/prng/random.c.
  */
 
 #include <stdint.h>

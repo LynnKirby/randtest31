@@ -4,7 +4,7 @@
  * SPDX-FileCopyrightText: 1995-2020 Free Software Foundation, Inc.
  * SPDX-FileCopyrightText: 2020 Lynn Kirby
  *
- * Modified from glibc stdlib/random.c.
+ * Modified from glibc stdlib/random.c
  */
 
 /*

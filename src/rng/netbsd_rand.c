@@ -2,6 +2,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: 1990, 1993 Regents of the University of California
  * SPDX-FileCopyrightText: 2020 Lynn Kirby
+ *
+ * Modified from NetBSD/src lib/libc/stdlib/rand.c
  */
 
 /*	$NetBSD: rand.c,v 1.12 2012/06/25 22:32:45 abs Exp $	*/

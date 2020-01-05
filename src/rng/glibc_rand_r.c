@@ -3,7 +3,7 @@
  * SPDX-FileCopyrightText: 1996-2020 Free Software Foundation, Inc.
  * SPDX-FileCopyrightText: 2020 Lynn Kirby
  *
- * Modified from glibc stdlib/rand_r.c.
+ * Modified from glibc stdlib/rand_r.c
  */
 
 /* Reentrant random function from POSIX.1c.

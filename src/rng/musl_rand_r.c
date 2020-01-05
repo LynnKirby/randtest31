@@ -3,7 +3,7 @@
  * SPDX-FileCopyrightText: 2013 Rich Felker
  * SPDX-FileCopyrightText: 2020 Lynn Kirby
  *
- * Modified from musl src/prng/rand_r.c.
+ * Modified from musl src/prng/rand_r.c
  */
 
 #include <stdint.h>

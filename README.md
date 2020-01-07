@@ -57,7 +57,7 @@ automatically alongside `randtest31`). For example:
 ./randtest31 write musl_rand | ./RNG_test stdin
 ```
 
-⚠️ You cannot use PowerShell with this pipe command. PowerShell pipes text, not
+**Warning:** You cannot use PowerShell with this pipe command. PowerShell pipes text, not
 binary data, between processes which breaks everything.
 
 ### TestU01

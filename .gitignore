@@ -3,3 +3,6 @@
 
 # Default build output directory
 build/
+
+# Editor cruft
+.vscode/

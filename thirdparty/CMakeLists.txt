@@ -13,8 +13,7 @@ add_library(
     LittleIntPacker
     STATIC
     LittleIntPacker/src/bitpacking32.c
-    LittleIntPacker/src/util.c
-)
+    LittleIntPacker/src/util.c)
 
 target_include_directories(LittleIntPacker PUBLIC LittleIntPacker/include)
 
@@ -42,7 +41,7 @@ add_library(
     pcg-c/src/pcg-rngs-16.c
     pcg-c/src/pcg-rngs-32.c
     pcg-c/src/pcg-rngs-64.c
-    pcg-c/src/pcg-rngs-128.c
-)
+    pcg-c/src/pcg-rngs-128.c)
 
 target_include_directories(pcg PUBLIC pcg-c/include)
+target_link_libraries(pcg PRIVATE randtest31_disable_warning_options)

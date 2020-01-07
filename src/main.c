@@ -17,6 +17,10 @@
 #include "TestU01.h"
 #include "bitpacking.h"
 
+#ifdef _MSC_VER
+#define _Noreturn __declspec(noreturn)
+#endif
+
 /*
  * Customized TestU01 batteries.
  */
@@ -28,7 +32,7 @@ extern void bbattery_Rabbit31(unif01_Gen *gen, double nb);
  */
 
 typedef void(*rng_init_fn)(uint32_t);
-typedef uint32_t(*rng_next_fn)();
+typedef uint32_t(*rng_next_fn)(void);
 
 struct RNG {
     const char *id;
@@ -43,7 +47,7 @@ struct RNG {
 
 #define X(id, desc)                    \
     extern void id ## _init(uint32_t); \
-    extern uint32_t id ## _next();
+    extern uint32_t id ## _next(void);
 
 #include "rngs.def"
 
@@ -116,12 +120,12 @@ static void do_direct_write(struct RNG *rng)
  */
 static struct RNG *testu01_rng;
 
-static unsigned testu01_next_direct()
+static unsigned testu01_next_direct(void)
 {
     return testu01_rng->next() & INT32_MAX;
 }
 
-static unsigned testu01_next_fixed()
+static unsigned testu01_next_fixed(void)
 {
     return testu01_rng->next() << 1;
 }

@@ -132,6 +132,8 @@ static unsigned testu01_next_fixed(void)
 
 static void do_testu01(struct RNG *rng, bool direct, enum mode mode)
 {
+    assert(mode != MODE_WRITE);
+
     testu01_rng = rng;
     rng_next_fn next = direct ? testu01_next_direct : testu01_next_fixed;
     char *desc = (char *) rng->description; /* non-const for some reason */
@@ -169,6 +171,9 @@ static void do_testu01(struct RNG *rng, bool direct, enum mode mode)
             scomp_DeleteRes(res);
             break;
         }
+        default:
+            assert(0 && "logic error: unreachable");
+            break;
     }
 
     unif01_DeleteExternGenBits(gen);
@@ -253,7 +258,7 @@ int main(int argc, char** argv)
      * Extract arguments.
      */
 
-    for (size_t i = 1; i < argc; i++) {
+    for (size_t i = 1; i < (size_t)argc; i++) {
         const char * cur = argv[i];
 
         /* Extract help flags */

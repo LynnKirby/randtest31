@@ -137,7 +137,7 @@ static long random(void);
 
 #define NSHUFF 50       /* to drop some "seed -> 1st value" linearity */
 
-static const int degrees[MAX_TYPES] =	{ DEG_0, DEG_1, DEG_2, DEG_3, DEG_4 };
+static const unsigned degrees[MAX_TYPES] =	{ DEG_0, DEG_1, DEG_2, DEG_3, DEG_4 };
 static const int seps [MAX_TYPES] =	{ SEP_0, SEP_1, SEP_2, SEP_3, SEP_4 };
 
 /*
@@ -286,7 +286,7 @@ initstate(unsigned int seed, char *arg_state, size_t n)
 	if (rand_type == TYPE_0)
 		state[-1] = rand_type;
 	else
-		state[-1] = MAX_TYPES * (rptr - state) + rand_type;
+		state[-1] = (uint32_t)(MAX_TYPES * (rptr - state) + rand_type);
 	if (n < BREAK_1) {
 		rand_type = TYPE_0;
 		rand_deg = DEG_0;
@@ -314,7 +314,7 @@ initstate(unsigned int seed, char *arg_state, size_t n)
 	if (rand_type == TYPE_0)
 		int_arg_state[0] = rand_type;
 	else
-		int_arg_state[0] = MAX_TYPES * (rptr - state) + rand_type;
+		int_arg_state[0] = (uint32_t)(MAX_TYPES * (rptr - state) + rand_type);
 	return (ostate);
 }
 
@@ -350,7 +350,7 @@ setstate(char *arg_state)
 	if (rand_type == TYPE_0)
 		state[-1] = rand_type;
 	else
-		state[-1] = MAX_TYPES * (rptr - state) + rand_type;
+		state[-1] = (uint32_t)(MAX_TYPES * (rptr - state) + rand_type);
 	rand_type = type;
 	rand_deg = degrees[type];
 	rand_sep = seps[type];

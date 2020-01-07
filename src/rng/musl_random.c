@@ -29,14 +29,13 @@ static int n = 31;
 static int i = 3;
 static int j = 0;
 static uint32_t *x = init+1;
-static volatile int lock[1];
 
-static uint32_t lcg31(uint32_t x) {
-	return (1103515245*x + 12345) & 0x7fffffff;
+static uint32_t lcg31(uint32_t s) {
+	return (1103515245*s + 12345) & 0x7fffffff;
 }
 
-static uint64_t lcg64(uint64_t x) {
-	return 6364136223846793005ull*x + 1;
+static uint64_t lcg64(uint64_t s) {
+	return 6364136223846793005ull*s + 1;
 }
 
 static void *savestate() {
@@ -56,7 +55,7 @@ static void __srandom(unsigned seed) {
 	uint64_t s = seed;
 
 	if (n == 0) {
-		x[0] = s;
+		x[0] = (uint32_t)s;
 		return;
 	}
 	i = n == 31 || n == 7 ? 3 : 1;

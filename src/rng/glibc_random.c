@@ -256,7 +256,7 @@ __initstate_r (unsigned int seed, char *arg_state, size_t n,
       if (old_type == TYPE_0)
 	old_state[-1] = TYPE_0;
       else
-	old_state[-1] = (MAX_TYPES * (buf->rptr - old_state)) + old_type;
+	old_state[-1] = (uint32_t)((MAX_TYPES * (buf->rptr - old_state)) + old_type);
     }
 
   int type;
@@ -288,7 +288,7 @@ __initstate_r (unsigned int seed, char *arg_state, size_t n,
 
   state[-1] = TYPE_0;
   if (type != TYPE_0)
-    state[-1] = (buf->rptr - state) * MAX_TYPES + type;
+    state[-1] = (uint32_t)((buf->rptr - state) * MAX_TYPES + type);
 
   return 0;
 
@@ -322,7 +322,7 @@ __setstate_r (char *arg_state, struct random_data *buf)
   if (old_type == TYPE_0)
     old_state[-1] = TYPE_0;
   else
-    old_state[-1] = (MAX_TYPES * (buf->rptr - old_state)) + old_type;
+    old_state[-1] = (uint32_t)((MAX_TYPES * (buf->rptr - old_state)) + old_type);
 
   type = new_state[-1] % MAX_TYPES;
   if (type < TYPE_0 || type > TYPE_4)

@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 #include <limits.h>
-#include "pcg_variants.h"
+#include "pcg.h"
 
 static pcg32s_random_t state;
 
